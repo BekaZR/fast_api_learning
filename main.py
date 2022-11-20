@@ -4,27 +4,22 @@ from pydantic import BaseModel, HttpUrl
 app = FastAPI()
 
 
-class Image(BaseModel):
-    url: HttpUrl
+class Product(BaseModel):
     name: str
-
-
-class Item(BaseModel):
-    name: str
-    description: str | None = None
+    description: str
     price: float
-    tax: float | None = None
-    tags: set[str] = set()
-    images: list[Image] | None = None
+    
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "name": "MacBook",
+                "description": "Best working notebook",
+                "price": 1000.0
+            }
+        }
 
 
-class Offer(BaseModel):
-    name: str
-    description: str | None = None
-    price: float
-    items: list[Item]
-
-
-@app.post("/offers/")
-async def create_offer(offer: Offer):
-    return offer
+@app.post('/product/')
+def create_product(product: Product):
+    return product
