@@ -1,25 +1,49 @@
-from fastapi import FastAPI
-from pydantic import BaseModel, HttpUrl
+from fastapi import Body, FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
 
-class Product(BaseModel):
+class Item(BaseModel):
     name: str
-    description: str
+    description: str | None = None
     price: float
-    
-    class Config:
-        orm_mode = True
-        schema_extra = {
-            "example": {
-                "name": "MacBook",
-                "description": "Best working notebook",
-                "price": 1000.0
-            }
-        }
+    tax: float | None = None
 
 
-@app.post('/product/')
-def create_product(product: Product):
-    return product
+@app.put("/items/{item_id}")
+async def update_item(
+    *,
+    item_id: int,
+    item: Item = Body(
+        examples={
+            "normal": {
+                "summary": "A normal example",
+                "description": "A **normal** item works correctly.",
+                "value": {
+                    "name": "Foo",
+                    "description": "A very nice Item",
+                    "price": 35.4,
+                    "tax": 3.2,
+                },
+            },
+            "converted": {
+                "summary": "An example with converted data",
+                "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
+                "value": {
+                    "name": "Bar",
+                    "price": "35.4",
+                },
+            },
+            "invalid": {
+                "summary": "Invalid data is rejected with an error",
+                "value": {
+                    "name": "Baz",
+                    "price": "thirty five point four",
+                },
+            },
+        },
+    ),
+):
+    results = {"item_id": item_id, "item": item}
+    return results
