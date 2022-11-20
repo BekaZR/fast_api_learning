@@ -1,13 +1,17 @@
-from unicodedata import numeric
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-class Product(BaseModel):
+
+class Item(BaseModel):
     name: str
-    price: int
-    
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+
 app = FastAPI()
 
-@app.post("/product/")
-def create_product(product: Product):
-    return product
+
+@app.put("/items/{item_id}")
+async def create_item(item_id: int, item: Item):
+    return {"item_id": item_id, **item.dict()}
